@@ -29,6 +29,7 @@ import (
 	"github.com/target/goalert/user"
 	"github.com/target/goalert/util/log"
 	"github.com/target/goalert/validation"
+	"github.com/target/goalert/version"
 	"go.opencensus.io/trace"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -51,6 +52,9 @@ var RootCmd = &cobra.Command{
 		}
 		if viper.GetBool("verbose") {
 			log.EnableVerbose()
+		}
+		if viper.GetBool("log-errors-only") {
+			log.ErrorsOnly()
 		}
 
 		err := viper.ReadInConfig()
@@ -89,9 +93,9 @@ var RootCmd = &cobra.Command{
 		}
 		q := u.Query()
 		if cfg.DBURLNext != "" {
-			q.Set("application_name", "GoAlert (Switch-Over Mode)")
+			q.Set("application_name", fmt.Sprintf("GoAlert %s (S/O Mode)", version.GitVersion()))
 		} else {
-			q.Set("application_name", "GoAlert")
+			q.Set("application_name", fmt.Sprintf("GoAlert %s", version.GitVersion()))
 		}
 		u.RawQuery = q.Encode()
 		cfg.DBURL = u.String()
@@ -108,7 +112,7 @@ var RootCmd = &cobra.Command{
 				return errors.Wrap(err, "parse next URL")
 			}
 			q := u.Query()
-			q.Set("application_name", "GoAlert (Switch-Over Mode)")
+			q.Set("application_name", fmt.Sprintf("GoAlert %s (S/O Mode)", version.GitVersion()))
 			u.RawQuery = q.Encode()
 			cfg.DBURLNext = u.String()
 
@@ -179,12 +183,6 @@ var (
 		Short: "Output the current version.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 
-			date := buildDate
-			t, err := time.Parse(time.RFC3339, date)
-			if err == nil {
-				date = t.Local().Format(time.RFC3339)
-			}
-
 			migrations := migrate.Names()
 
 			fmt.Printf(`Version:   %s
@@ -193,9 +191,9 @@ BuildDate: %s
 GoVersion: %s (%s)
 Platform:  %s/%s
 Migration: %s (#%d)
-`, gitVersion,
-				gitCommit, gitTreeState,
-				date,
+`, version.GitVersion(),
+				version.GitCommit(), version.GitTreeState(),
+				version.BuildDate().Local().Format(time.RFC3339),
 				runtime.Version(), runtime.Compiler,
 				runtime.GOOS, runtime.GOARCH,
 				migrations[len(migrations)-1], len(migrations),
@@ -563,6 +561,7 @@ func init() {
 	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "Enable verbose logging.")
 	RootCmd.Flags().Bool("log-requests", false, "Log all HTTP requests. If false, requests will be logged for debug/trace contexts only.")
 	RootCmd.PersistentFlags().Bool("json", false, "Log in JSON format.")
+	RootCmd.PersistentFlags().Bool("log-errors-only", false, "Only log errors (superseeds other flags).")
 
 	RootCmd.Flags().String("ui-url", "", "Proxy UI requests to an alternate host. Default is to serve bundled assets from memory.")
 	RootCmd.Flags().Bool("disable-https-redirect", false, "Disable automatic HTTPS redirects.")

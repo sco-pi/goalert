@@ -28,12 +28,27 @@ function testServices(screen: ScreenFormat) {
     })
 
     it('should handle searching with leading and trailing spaces', () => {
+      cy.createService({ name: 'foobar' })
+      cy.createService({ name: 'foo bar' })
+
       cy.get('ul[data-cy=apollo-list]').should('exist')
       // by name with spaces before and after
+      // since search looks for literally the search string typed in, there would be no results for leading space + search string + 2 spaces
       cy.pageSearch(' ' + svc.name + '  ')
       cy.get('body')
-        .should('contain', svc.name)
-        .should('contain', svc.description)
+        .should('not.contain', svc.name)
+        .should('not.contain', svc.description)
+
+      // since front-end no longer trims spaces for search arguments, the literal search result for search string should show up, if it exists.
+      cy.pageSearch(' bar')
+      cy.get('body')
+        .should('contain', 'foo bar')
+        .should('not.contain', 'foobar')
+
+      cy.pageSearch('foobar')
+      cy.get('body')
+        .should('contain', 'foobar')
+        .should('not.contain', 'foo bar')
     })
 
     it('should link to details page', () => {
@@ -163,17 +178,6 @@ function testServices(screen: ScreenFormat) {
           .contains('a', ep.name)
           .should('have.attr', 'href', `/escalation-policies/${ep.id}`)
       })
-    })
-
-    it('should allow setting and unsetting as a favorite service', () => {
-      // test setting as favorite
-      cy.get('button[aria-label="Set as a Favorite Service"]').click()
-      cy.reload()
-      // aria label should change and should be set as a favorite, test unsetting
-      cy.get('button[aria-label="Unset as a Favorite Service"').click()
-      cy.reload()
-      // check that unset
-      cy.get('button[aria-label="Set as a Favorite Service"]').click()
     })
 
     it('should navigate to and from alerts', () => {

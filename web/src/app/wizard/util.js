@@ -12,6 +12,7 @@ export function getService(value) {
         name: value.key.label + ' Integration Key',
       },
     ],
+    favorite: true,
   }
 }
 
@@ -33,6 +34,7 @@ export function getSchedule(key, value) {
       'Schedule',
     description: DESC,
     timeZone: s.timeZone,
+    favorite: true,
   }
 }
 

@@ -13,7 +13,8 @@
       "-l=localhost:3042",
       "--ui-url=http://localhost:3045",
       "--db-url=postgres://postgres@localhost:5433/postgres?sslmode=disable",
-      "--slack-base-url=http://localhost:3040/slack"
+      "--slack-base-url=http://localhost:3040/slack",
+      "--log-errors-only"
     ],
     "Dir": "web/src",
     "Restart": true,
@@ -56,9 +57,9 @@
     "Watch": true,
     "Command": [
       "bin/mockslack",
-      "-client-id=555449060693.555449060694",
-      "-client-secret=52fdfc072182654f163f5f0f9a621d72",
-      "-access-token=xoxp-555449060693-555449060694-587071460694-9566c74d10037c4d7bbb0407d1e2c649",
+      "-client-id=000000000000.000000000000",
+      "-client-secret=00000000000000000000000000000000",
+      "-access-token=xoxp-000000000000-000000000000-000000000000-00000000000000000000000000000000",
       "-prefix=/slack",
       "-single-user=bob",
       "-addr=localhost:3046"

@@ -179,6 +179,8 @@ type Mutation {
 
   deleteAll(input: [TargetInput!]): Boolean!
 
+  createAlert(input: CreateAlertInput!): Alert
+
   createService(input: CreateServiceInput!): Service
   createEscalationPolicy(input: CreateEscalationPolicyInput!): EscalationPolicy
   createEscalationPolicyStep(
@@ -206,6 +208,12 @@ type Mutation {
   updateUserOverride(input: UpdateUserOverrideInput!): Boolean!
 
   setConfig(input: [ConfigValueInput!]): Boolean!
+}
+
+input CreateAlertInput {
+  summary: String!
+  details: String
+  serviceID: ID!
 }
 
 input ConfigValueInput {
@@ -237,6 +245,7 @@ input CreateScheduleInput {
   name: String!
   description: String
   timeZone: String!
+  favorite: Boolean
 
   targets: [ScheduleTargetInput!]
 }
@@ -285,6 +294,8 @@ type TimeZone {
 input CreateServiceInput {
   name: String!
   description: String = ""
+
+  favorite: Boolean
 
   escalationPolicyID: ID
   newEscalationPolicy: CreateEscalationPolicyInput
@@ -377,6 +388,7 @@ type Schedule {
 
   targets: [ScheduleTarget!]!
   target(input: TargetInput!): ScheduleTarget
+  isFavorite: Boolean!
 }
 
 type OnCallShift {
@@ -418,6 +430,7 @@ input CreateRotationInput {
 
   timeZone: String!
   start: ISOTimestamp!
+  favorite: Boolean
 
   type: RotationType!
   shiftLength: Int = 1
@@ -429,6 +442,7 @@ type Rotation {
   id: ID!
   name: String!
   description: String!
+  isFavorite: Boolean!
 
   start: ISOTimestamp!
   timeZone: String!
@@ -479,6 +493,12 @@ input RotationSearchOptions {
   after: String = ""
   search: String = ""
   omit: [ID!]
+
+  # Include only favorited rotations in the results.
+  favoritesOnly: Boolean = false
+
+  # Sort favorite rotations first.
+  favoritesFirst: Boolean = false
 }
 
 input EscalationPolicySearchOptions {
@@ -493,6 +513,12 @@ input ScheduleSearchOptions {
   after: String = ""
   search: String = ""
   omit: [ID!]
+
+  # Include only favorited services in the results.
+  favoritesOnly: Boolean = false
+
+  # Sort favorite services first.
+  favoritesFirst: Boolean = false
 }
 
 input ServiceSearchOptions {
@@ -543,6 +569,25 @@ type Alert {
 
   # Escalation Policy State for the alert.
   state: AlertState
+
+  # Recent log entries for the alert.
+  recentEvents(input: AlertRecentEventsOptions): AlertLogEntryConnection!
+}
+
+input AlertRecentEventsOptions {
+  limit: Int
+  after: String = ""
+}
+
+type AlertLogEntryConnection {
+  nodes: [AlertLogEntry!]!
+  pageInfo: PageInfo!
+}
+
+type AlertLogEntry {
+  id: Int!
+  timestamp: ISOTimestamp!
+  message: String!
 }
 
 # The escalation policy state details for the alert.
