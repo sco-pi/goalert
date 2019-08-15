@@ -5,3 +5,5 @@ RUN curl -s https://nodejs.org/dist/v10.15.3/node-v10.15.3-linux-x64.tar.xz | ta
 RUN curl -s https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz | tar xz -C /usr/local
 ENV PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/node_modules/.bin:/usr/lib/postgresql/9.6/bin:/usr/local/go/bin:/root/go/bin
 RUN npm install -g yarn
+
+ADD . /goalert
